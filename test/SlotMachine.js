@@ -4,7 +4,6 @@ const chai = require("chai");
 const sinonChai = require("sinon-chai");
 const sinon = require("sinon");
 chai.use(sinonChai);
-// chai.should();
 
 var SlotMachine = artifacts.require("../contracts/SlotMachine.sol");
 
