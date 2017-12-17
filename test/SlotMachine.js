@@ -1,23 +1,38 @@
+"use strict";
+const expect = require('chai').expect;
+const chai = require("chai");
+const sinonChai = require("sinon-chai");
+const sinon = require("sinon");
+chai.use(sinonChai);
+// chai.should();
+
 var SlotMachine = artifacts.require("../contracts/SlotMachine.sol");
 
-contract('SlotMachine', function(accounts) {
+contract('SlotMachine', function (accounts) {
+  let contract;
 
-  it("should get bankAddress", function() {
-    return SlotMachine.deployed().then(function(instance) {
-      return instance.getBankAddress.call();
-    }).then(function(bankAddress) {
-      assert.equal(bankAddress, accounts[0]);
+  beforeEach(async () => {
+    contract = await SlotMachine.deployed();
+  })
+
+  describe('prizeAmount', () => {
+    it("returns 0 if the contract funds are 0", async function () {
+      const prizeAmount = await contract.prizeAmount.call();
+      let parsedPrizeAmount = parseInt(prizeAmount.valueOf());
+
+      expect(parsedPrizeAmount).to.be.equal(0);
+    });
+
+    it("returns half of the contract funds", async function () {
+      await contract.pullLever({from: accounts[1], value: 10000000000});
+      contract.getLastResult().then(function(lastResult) {
+        expect(lastResult).to.be.equal('Loss');
+      })
+
+
+      const prizeAmount = await contract.prizeAmount.call();
+      let parsedPrizeAmount = parseInt(prizeAmount.valueOf());
+      expect(parsedPrizeAmount).to.be.equal(5000000000);
     });
   });
-
-  it("should get prizeAmount", function() {
-    return SlotMachine.deployed().then(function(instance) {
-      return instance.getPrizeAmount.call();
-    }).then(function(balance) {
-      assert.equal(balance.valueOf(), web3.eth.getBalance(web3.eth.accounts[0]).valueOf());
-    });
-  });
-
-  
-
 });
