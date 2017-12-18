@@ -8,7 +8,7 @@ contract SlotMachine {
     uint amountSent;
     uint amountReceived;
   }
-  
+
   mapping (address => Puller) public pullers;
   address owner;
   uint pullCost;
@@ -25,7 +25,6 @@ contract SlotMachine {
     resetGame();
   }
 
-  // Still trying to fully understand this
   function() public payable {
     LogFundsReceived(msg.sender, msg.value);
   }
