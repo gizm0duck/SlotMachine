@@ -45,17 +45,16 @@ contract('SlotMachine', function (accounts) {
       pullCost = parseInt(pullCost.valueOf());
     });
 
-    // describe('value sent is not enough to cover the pull cost', () => {
+    describe('when value sent is not enough to cover the pull cost', () => {
       it("returns the funds to the sender and doesn't pull the lever", async function () {
         let fundsBeforePull = web3.eth.getBalance(pullerAccount);
         await contract.pullLever({from: pullerAccount, value: pullCost-10});
         let fundsAfterPull = web3.eth.getBalance(pullerAccount);
-
         // This is a roundabout way to make sure that the balance before and after are the same (minus gas)
-        let balanceDifference = parseInt(fundsBeforePull.valueOf())-parseInt(fundsAfterPull.valueOf());
+        let balanceDifference = parseInt(fundsBeforePull)-parseInt(fundsAfterPull);
         expect(balanceDifference).to.be.below(pullCost);
       });
-    // });
+    });
 
     describe('when the transaction is a win', () => {
       beforeEach(async () => {
@@ -69,13 +68,17 @@ contract('SlotMachine', function (accounts) {
       });
 
       it("transfers the prize amount to the winner", async function () {
-        await contract.pullLever({from: pullerAccount, value: pullCost});
-
+        // Figure out mocking and spying here to make life easier
+        // let previousBalance = await parseInt(web3.eth.getBalance(pullerAccount));
+        // await contract.pullLever({from: pullerAccount, value: pullCost});
+        // let newBalance = await parseInt(web3.eth.getBalance(pullerAccount));
+        // expect(previousBalance).to.be.below(newBalance);
       });
 
       it("resets the values", async function () {
         await contract.pullLever({from: pullerAccount, value: pullCost});
-
+        let newPullCost = await contract.getPullCost.call();
+        expect(parseInt(newPullCost)).to.equal(10000000000000000)
       });
     });
     //
@@ -87,30 +90,20 @@ contract('SlotMachine', function (accounts) {
       });
 
       it("transfers the pull cost to the contract", async function () {
+        let previousBalance = parseInt(web3.eth.getBalance(contract.address));
         await contract.pullLever({from: pullerAccount, value: pullCost});
+        let newBalance = parseInt(web3.eth.getBalance(contract.address));
+        expect(previousBalance).to.be.below(newBalance);
       });
 
       it("increases the pull cost", async function () {
         await contract.pullLever({from: pullerAccount, value: pullCost});
-
+        let newPullCost = await contract.getPullCost();
+        expect(parseInt(newPullCost)).to.be.above(pullCost);
+        // TODO: Figure out how to handle calculating what the balance should be
+        // taking transaction fees into consideration
+        // expect(parseInt(newPullCost.valueOf())).to.equal(10020010000000000);
       });
     });
-
   });
-
-  // describe('increasePullCost', () => {
-  //   before(async () => {
-  //     const pullCost = await contract.getPullCost.call();
-  //     let parsedPullCost = parseInt(pullCost.valueOf());
-  //     expect(parsedPullCost).to.be.equal(10010000000000000);
-  //   });
-  //
-  //   it("increases pull cost by .1%", async function () {
-  //     await contract.increasePullCost();
-  //     const pullCost = await contract.getPullCost.call();
-  //     let parsedPullCost = parseInt(pullCost.valueOf());
-  //
-  //     expect(parsedpullCost).to.be.equal(999);
-  //   });
-  // });
 });
