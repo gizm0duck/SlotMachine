@@ -3,7 +3,6 @@ pragma solidity ^0.4.18;
 import "./PullOutcome.sol";
 
 contract SlotMachine {
-
   address owner;
   uint256 pullCost;
   string lastResult;
@@ -18,7 +17,7 @@ contract SlotMachine {
     resetGame();
   }
 
-  // Still trying to understand this
+  // Still trying to fully understand this
   function() public payable {
     LogFundsReceived(msg.sender, msg.value);
   }
@@ -36,24 +35,22 @@ contract SlotMachine {
   }
 
   function pullLever() payable public {
-    // Ensure this account balance is high enough to pay the pull cost
-    // and enough was sent
-    // better to use require here?
-    if (msg.value >= pullCost && msg.value > this.balance) {
+    // Ensure the value sent is enough to cover the pull cost
+    if (msg.value < pullCost) {
       // Return funds to sender
       msg.sender.transfer(msg.value);
       return;
     }
 
-    if (forceWin || PullOutcome.isWinner(pullCost)) {
+    if (PullOutcome.isWinner(pullCost, forceWin)) {
       distributeWinnings();
     } else {
-      addValueToPot();
+      houseWins();
     }
   }
 
   // Money goes into the pot and next pull cost goes up
-  function addValueToPot() payable public {
+  function houseWins() payable public {
     lastResult = 'Loss';
     this.transfer(msg.value);
     increasePullCost();
@@ -61,7 +58,7 @@ contract SlotMachine {
   }
 
   // transfer funds to the winner and reset everything
-  function distributeWinnings() payable public{
+  function distributeWinnings() payable public {
     lastResult = 'Win';
     // Award the prize money to the puller
     msg.sender.transfer(prizeAmount());
@@ -74,14 +71,15 @@ contract SlotMachine {
     pullCost += pullCost/1000;
   }
 
+  // Put the game state back to the initial state
+  function resetGame() private {
+    pullCost = 10 finney;
+    forceWin = false;
+  }
+
   // WARNING: This is a terrible idea :)
   // This is just for demonstration purposes
   function setForceWin() public {
     forceWin = true;
-  }
-
-  function resetGame() private {
-    pullCost = 10 finney;
-    forceWin = false;
   }
 }

@@ -16,8 +16,15 @@ contract('PullOutcome', function(accounts) {
 
   describe('isWinner', () => {
     it("returns false ", async function() {
-      let outcome = await contract.isWinner.call(111);
+      let outcome = await contract.isWinner.call(111, false);
       expect(outcome).to.be.false;
+    });
+
+    describe('isWinner', () => {
+      it("returns true ", async function() {
+        let outcome = await contract.isWinner.call(112, true);
+        expect(outcome).to.be.true;
+      });
     });
   });
 });
