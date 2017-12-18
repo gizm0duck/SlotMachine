@@ -3,10 +3,18 @@ pragma solidity ^0.4.18;
 import "./PullOutcome.sol";
 
 contract SlotMachine {
+  struct Puller {
+    uint numPulls;
+    uint amountSent;
+    uint amountReceived;
+  }
+  
+  mapping (address => Puller) public pullers;
   address owner;
-  uint256 pullCost;
+  uint pullCost;
   string lastResult;
   bool forceWin;
+
 
   event LogFundsReceived(address sender, uint amount);
   event LogFundsDistributed(address receiver, uint amount);
@@ -22,11 +30,11 @@ contract SlotMachine {
     LogFundsReceived(msg.sender, msg.value);
   }
 
-  function getPullCost() public view returns(uint256) {
+  function getPullCost() public view returns(uint) {
     return pullCost;
   }
 
-  function prizeAmount() public view returns (uint256) {
+  function prizeAmount() public view returns (uint) {
     return this.balance/2;
   }
 
